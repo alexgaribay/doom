@@ -45,7 +45,7 @@
 
 ;; If you want to change the style of line numbers, change this to `relative' or
 ;; `nil' to disable it:
-(setq display-line-numbers-type 'relative)
+;; (setq display-line-numbers-type 'relative)
 
 ;;
 ;; (setq magit-git-executable "git")
@@ -301,6 +301,7 @@
 (setq lsp-ui-peek-enable nil)
 
 ;; Key Bindings
+(map! :leader :desc "Shell Command on Region" "|" #'shell-command-on-region)
 (map! :leader :desc "Maximize window" :prefix "w" "m" #'doom/window-maximize-buffer)
 (map! :leader :desc "Toggle neotree" :prefix "p" "t" #'+treemacs/toggle)
 (map! :leader :desc "Find file in project" :prefix "p" "f" #'+ivy/projectile-find-file)
