@@ -168,6 +168,15 @@
 ;;                           (require 'lsp-python-ms)
 ;;                           (lsp))))  ; or lsp-deferred
 
+;; Swift
+(use-package lsp-sourcekit
+  :after lsp-mode
+  :config
+  (setq lsp-sourcekit-executable "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp"))
+
+(use-package swift-mode
+  :hook (swift-mode . (lambda () (lsp))))
+(setq swift-mode:basic-offset 2)
 ;; Elixir
 
 (use-package lsp-mode
@@ -274,6 +283,8 @@
 ;;     :back "[ ]+\"\"\"")))
 ;; (mmm-add-mode-ext-class 'elixir-mode nil 'elixir-sql)
 
+(setq lsp-enable-file-watchers t)
+(setq lsp-file-watch-threshold 3000)
 (setq-default lsp-file-watch-ignored ())
 (add-to-list 'lsp-file-watch-ignored ".elixir_ls")
 (add-to-list 'lsp-file-watch-ignored "deps")

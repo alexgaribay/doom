@@ -54,3 +54,4 @@
 (package! find-file-in-project)
 (package! lsp-treemacs)
 ;; (package! lsp-python-ms)
+(package! lsp-sourcekit)
