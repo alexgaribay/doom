@@ -3,7 +3,7 @@
 ;; Place your private configuration here! Remember, you do not need to run 'doom
 ;; refresh' after modifying this file!
 
-(add-to-list 'default-frame-alist '(fullscreen . maximized))
+;; (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 ;; These are used for a number of things, particularly for GPG configuration,
 ;; some email clients, file templates and snippets.
@@ -16,6 +16,8 @@
 
 ;; treemacs
 
+(add-hook 'treemacs-mode-hook (lambda() (display-line-numbers-mode -1)))
+;;
 ;; (setq treemacs-no-png-images t)
 (setq lsp-treemacs-sync-mode 1)
 
