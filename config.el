@@ -21,6 +21,12 @@
 ;; (setq treemacs-no-png-images t)
 (setq lsp-treemacs-sync-mode 1)
 
+;; Custom functions
+
+(defun clipboard-copy-region (&optional b e)
+  (interactive "r")
+  (shell-command-on-region b e "pbcopy"))
+
 ;;
 ;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
 ;; are the three important ones:
@@ -33,7 +39,7 @@
 ;; font string. You generally only need these two:
 ;; test
 (setq doom-font (font-spec :family "monospace" :size 16)
-      doom-variable-pitch-font (font-spec :family "Fira Code"))
+      doom-variable-pitch-font (font-spec :family "Fira Mono"))
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
@@ -339,3 +345,5 @@
 (map! :leader :desc "Jump to symbol" :prefix "s" "j" #'imenu)
 (map! :leader :desc "Search project" "/" #'+default/search-project)
 (map! :leader :desc "Magit status" :prefix "g" "s" #'magit-status)
+(map! :leader :desc "Copy region to clipboard" :prefix "=" "c" #'clipboard-copy-region)
+(map! :leader :desc "Paste clipboard to region" :prefix "=" "v" #'clipboard-yank)
