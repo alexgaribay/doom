@@ -56,4 +56,4 @@
 (package! dart-mode)
 (package! lsp-dart)
 ;; (package! lsp-python-ms)
-;;(package! lsp-sourcekit)
+(package! lsp-sourcekit)

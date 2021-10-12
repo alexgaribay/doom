@@ -331,6 +331,9 @@
       company-minimum-prefix-length 1
       lsp-lens-enable t
       lsp-signature-auto-activate nil)
+(with-eval-after-load 'projectile
+  (add-to-list 'projectile-project-root-files-bottom-up "pubspec.yaml")
+  (add-to-list 'projectile-project-root-files-bottom-up "BUILD"))
 
 ;; LSP
 (setq lsp-ui-sideline-enable nil)
