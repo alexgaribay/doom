@@ -53,5 +53,7 @@
 (package! counsel-tramp)
 (package! find-file-in-project)
 (package! lsp-treemacs)
+(package! dart-mode)
+(package! lsp-dart)
 ;; (package! lsp-python-ms)
-(package! lsp-sourcekit)
+;;(package! lsp-sourcekit)
