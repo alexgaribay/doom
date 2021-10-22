@@ -66,6 +66,7 @@
   (add-to-list 'ivy-extra-directories ".elixir_ls")
   (add-to-list 'ivy-extra-directories ".git")
   (add-to-list 'ivy-extra-directories "_build")
+  (add-to-list 'ivy-extra-directories "build")
   (add-to-list 'ivy-extra-directories "deps")
   (add-to-list 'ivy-extra-directories "node_modules"))
 
@@ -333,6 +334,21 @@
 (with-eval-after-load "projectile"
   (add-to-list 'projectile-project-root-files-bottom-up "pubspec.yaml")
   (add-to-list 'projectile-project-root-files-bottom-up "BUILD"))
+
+(with-eval-after-load 'dart-mode
+  (map! :leader :desc "Run all tests" :prefix "mt" "a" #'lsp-dart-run-all-tests)
+  (map! :leader :desc "Run tests in buffer" :prefix "mt" "b" #'lsp-dart-run-test-file)
+  (map! :leader :desc "Run test at point" :prefix "mt" "t" #'lsp-dart-run-test-at-point)
+
+  (map! :leader :desc "Show Dart outline" :prefix "mo" "d" #'lsp-dart-show-outline)
+  (map! :leader :desc "Show Flutter outline" :prefix "mo" "f" #'lsp-dart-show-flutter-outline)
+  (map! :leader :desc "Show test tree" :prefix "mo" "t" #'lsp-dart-test-show-tree)
+
+  (map! :leader :desc "Pub get" :prefix "mp" "g" #'lsp-dart-pub-get)
+  (map! :leader :desc "Pub upgrade" :prefix "mp" "u" #'lsp-dart-pub-upgrade)
+
+  (map! :leader :desc "Dart Run" :prefix "mm" "r" #'lsp-dart-run)
+  )
 
 (setq lsp-dart-flutter-sdk-dir "~/flutter")
 
