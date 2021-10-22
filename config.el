@@ -16,10 +16,13 @@
 
 ;; treemacs
 
+(with-eval-after-load 'treemacs
+        (setq treemacs-no-png-images nil)
+        (setq lsp-treemacs-sync-mode nil)
+        (display-line-numbers-mode -1)
+  )
 (add-hook 'treemacs-mode-hook (lambda() (display-line-numbers-mode -1)))
 ;;
-;; (setq treemacs-no-png-images t)
-(setq lsp-treemacs-sync-mode 1)
 
 ;; Custom functions
 
@@ -324,17 +327,16 @@
 
 
 ;; Dart/Flutter
+(use-package dart-mode
+  :hook (dart-mode . lsp))
 
-(add-hook 'dart-mode-hook 'lsp)
-(setq gc-cons-threshold (* 100 1024 1024)
-      read-process-output-max (* 1024 1024)
-      company-minimum-prefix-length 1
-      lsp-lens-enable t
-      lsp-signature-auto-activate nil)
-(with-eval-after-load 'projectile
+(with-eval-after-load "projectile"
   (add-to-list 'projectile-project-root-files-bottom-up "pubspec.yaml")
   (add-to-list 'projectile-project-root-files-bottom-up "BUILD"))
 
+(setq lsp-dart-flutter-sdk-dir "~/flutter")
+
+;;
 ;; LSP
 (setq lsp-ui-sideline-enable nil)
 (setq-default lsp-ui-doc-enable nil)
