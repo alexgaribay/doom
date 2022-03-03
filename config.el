@@ -63,12 +63,18 @@
 ;; (setq magit-git-executable "git")
 
 (after! ivy
-  (add-to-list 'ivy-extra-directories ".elixir_ls")
-  (add-to-list 'ivy-extra-directories ".git")
-  (add-to-list 'ivy-extra-directories "_build")
-  (add-to-list 'ivy-extra-directories "build")
-  (add-to-list 'ivy-extra-directories "deps")
-  (add-to-list 'ivy-extra-directories "node_modules"))
+  ;; (add-to-list 'ivy-extra-directories ".elixir_ls")
+  ;; (add-to-list 'ivy-extra-directories ".git")
+  ;; (add-to-list 'ivy-extra-directories "_build")
+  ;; (add-to-list 'ivy-extra-directories "build")
+  ;; (add-to-list 'ivy-extra-directories "deps")
+  ;; (add-to-list 'ivy-extra-directories "node_modules")
+    (setq counsel-find-file-ignore-regexp "\\.elixir_ls\\'")
+    (setq counsel-find-file-ignore-regexp "\\.git\\'")
+    (setq counsel-find-file-ignore-regexp "\\_build\\'")
+    (setq counsel-find-file-ignore-regexp "\\deps\\'")
+    (setq counsel-find-file-ignore-regexp "\\node_modules\\'")
+    )
 
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
