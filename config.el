@@ -222,6 +222,11 @@
                      :remote? t
                      :server-id 'elixir-ls-remote))))
 
+
+(eval-after-load "elixir-mode"
+  '(defun elixir-format--mix-executable ()
+     (string-trim-right (shell-command-to-string "asdf which mix"))))
+
 ;; (require 'mmm-mode)
 (require 'web-mode)
 ;; (setq mmm-global-mode 'maybe)
