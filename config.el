@@ -14,6 +14,7 @@
 
 (setq tramp-shell-prompt-pattern "^[^$>\n]*[#$%>] *\\(\[[0-9;]*[a-zA-Z] *\\)*")
 
+(setq package-native-compile t)
 ;; treemacs
 
 (with-eval-after-load 'treemacs
@@ -326,7 +327,7 @@
 (with-eval-after-load 'elixir-mode
   (map! :leader :desc "Describe" :prefix "mh" "d" #'lsp-describe-thing-at-point)
   (map! :leader :desc "Find references" :prefix "mh" "r" #'lsp-find-references)
-  (map! :leader :desc "Format buffer" :prefix "mf" "b" #'lsp-format-buffer)
+  (map! :leader :desc "Format buffer" :prefix "mf" "b" #'elixir-format)
   (map! :leader :desc "Go to definition" :prefix "mg" "d" #'lsp-goto-implementation)
   (map! :leader :desc "Go to definition" :prefix "mg" "d" #'lsp-goto-implementation)
 
