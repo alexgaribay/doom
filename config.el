@@ -339,6 +339,7 @@
   )
 
 (setq lsp-dart-sdk-dir (concat (getenv "FLUTTER_ROOT") "/bin/cache/dart-sdk"))
+(setq lsp-dart-flutter-sdk-dir (getenv "FLUTTER_ROOT"))
 
 ;; Dart/Flutter
 (use-package lsp-mode
