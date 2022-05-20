@@ -338,9 +338,10 @@
           :nv "a" #'exunit-verify-all)
   )
 
+(setq lsp-dart-sdk-dir (concat (getenv "FLUTTER_ROOT") "/bin/cache/dart-sdk"))
 
 ;; Dart/Flutter
-(use-package dart-mode
+(use-package lsp-mode
   :hook (dart-mode . lsp))
 
 (with-eval-after-load "projectile"
@@ -361,8 +362,6 @@
 
   (map! :leader :desc "Dart Run" :prefix "mm" "r" #'lsp-dart-run)
   )
-
-(setq lsp-dart-flutter-sdk-dir "~/flutter")
 
 ;;
 ;; LSP
