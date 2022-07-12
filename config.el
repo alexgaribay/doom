@@ -3,7 +3,7 @@
 ;; Place your private configuration here! Remember, you do not need to run 'doom
 ;; refresh' after modifying this file!
 
-;; (add-to-list 'default-frame-alist '(fullscreen . maximized))
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 ;; These are used for a number of things, particularly for GPG configuration,
 ;; some email clients, file templates and snippets.
@@ -122,6 +122,9 @@
   (evil-window-down 1))
 
 ;; Package Configuration
+
+;; Disable line numbers in neotree
+(add-hook 'neo-after-create-hook (lambda (&optional dummy) (display-line-numbers-mode -1)))
 
 ;; Tramp
 (require 'tramp)
@@ -373,13 +376,13 @@
 ;; Key Bindings
 (map! :leader :desc "Shell Command on Region" "|" #'shell-command-on-region)
 (map! :leader :desc "Maximize window" :prefix "w" "m" #'doom/window-maximize-buffer)
-(map! :leader :desc "Toggle neotree" :prefix "p" "t" #'+treemacs/toggle)
+(map! :leader :desc "Toggle neotree" :prefix "p" "t" #'neotree-toggle)
 (map! :leader :desc "Find file in project" :prefix "p" "f" #'+ivy/projectile-find-file)
 (map! :leader :desc "Show file in project tree" :prefix "p" "F" #'treemacs-find-file)
 (map! :leader :desc "Split vertically and focus new window" :prefix "w" "V" #'split-window-vertically-and-focus)
 (map! :leader :desc "Split horizontally and focus new window" :prefix "w" "S" #'split-window-horizontally-and-focus)
 (map! :leader
-      :desc "Project tree"        "0" #'treemacs-select-window
+      :desc "Project tree"        "0" #'neotree-show
       :desc "Select Window 1"     "1" #'winum-select-window-1
       :desc "Select Window 2"     "2" #'winum-select-window-2
       :desc "Select Window 3"     "3" #'winum-select-window-3
