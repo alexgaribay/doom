@@ -48,7 +48,6 @@
 (package! doom-modeline)
 (package! winum)
 (package! mmm-mode)
-(package! polymode)
 (package! yaml-mode)
 (package! counsel-tramp)
 (package! find-file-in-project)

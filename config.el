@@ -200,36 +200,43 @@
   (vue-mode . lsp))
 
 ;; Swift
-(use-package lsp-sourcekit
-  :after lsp-mode
-  :config
-  (setq lsp-sourcekit-executable "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp"))
+;; (use-package lsp-sourcekit
+;;   :after lsp-mode
+;;   :config
+;;   (setq lsp-sourcekit-executable "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp"))
 
-(use-package swift-mode
-  :hook (swift-mode . (lambda () (lsp))))
-(setq swift-mode:basic-offset 2)
+;; (use-package swift-mode
+;;   :hook (swift-mode . (lambda () (lsp))))
+;; (setq swift-mode:basic-offset 2)
 ;; Elixir
 
-(use-package lsp-mode
-  :defer
-  :commands lsp
-  :diminish lsp-mode
-  :hook
-  (elixir-mode . lsp)
-  :init
-  (add-to-list 'exec-path "~/elixir-ls/release/")
-  :config
-  (progn
-   (lsp-register-client
-    (make-lsp-client :new-connection (lsp-tramp-connection "~/elixir-ls/release/language_server.sh")
-                     :major-modes '(elixir-mode)
-                     :remote? t
-                     :server-id 'elixir-ls-remote))))
+;; (use-package lsp-mode
+;;   :defer
+;;   :commands lsp
+;;   :diminish lsp-mode
+;;   :hook
+;;   (elixir-mode . lsp)
+;;   :init
+;;   (add-to-list 'exec-path "~/elixir-ls/release/")
+;;   :config
+;;   (progn
+;;    (lsp-register-client
+;;     (make-lsp-client :new-connection (lsp-tramp-connection "~/elixir-ls/release/language_server.sh")
+;;                      :major-modes '(elixir-mode)
+;;                      :remote? t
+;;                      :server-id 'elixir-ls-remote))))
 
 
 (eval-after-load "elixir-mode"
   '(defun elixir-format--mix-executable ()
      (string-trim-right (shell-command-to-string "asdf which mix"))))
+
+(use-package flycheck-mode
+  :hook elixir-mode
+  :ensure flycheck
+  :config
+  (use-package flycheck-credo)
+  (flycheck-credo-setup))
 
 ;; (require 'mmm-mode)
 (require 'web-mode)
@@ -252,72 +259,6 @@
 ;;     (apply f r)))
 
 ;; Syntax Highlighting
-
-(require 'polymode)
-(define-hostmode poly-elixir-hostmode
-  :mode 'elixir-mode)
-;; --
-;; For SQL
-(define-innermode poly-elixir-sql-innermode
-  :mode 'sql-mode
-  :head-matcher "[\n\t\s]# --SQL[\n\t\s]*\"\"\"[\n\t\s]*"
-  :tail-matcher "[\n\t\s]*\"\"\""
-  :head-mode 'host
-  :tail-mode 'host)
-
-;; -- For EEx and LEEx
-(define-innermode poly-elixir-eex-innermode
-  :mode 'web-mode
-  :head-matcher "~\\(E\\|L\\)\"\"\""
-  :tail-matcher "[\n\t\s]*\"\"\""
-  :head-mode 'host
-  :tail-mode 'host)
-
-(define-polymode poly-elixir-mode
-  :hostmode 'poly-elixir-hostmode
-  :innermodes '(poly-elixir-sql-innermode poly-elixir-eex-innermode))
-
-;; -- Configure modes to work automatically
-(add-to-list 'auto-mode-alist '("\\.ex" . poly-elixir-mode))
-(add-to-list 'auto-mode-alist '("\\.exs" . poly-elixir-mode))
-(add-to-list 'auto-mode-alist '("\\.leex" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.eex" . web-mode))
-
-;; (mmm-add-classes
-;;   '((elixir-eex
-;;     :submode web-mode
-;;     :face mmm-code-submode-face
-;;     :front "^.*?\~E\"\"\""
-;;     :back "^.*?\"\"\"")))
-;; (mmm-add-classes
-;;   '((elixir-eex
-;;     :submode web-mode
-;;     :face mmm-code-submode-face
-;;     :front "^.*?\~E\{"
-;;     :back "^.*?\}")))
-;; (mmm-add-classes
-;;   '((elixir-eex
-;;     :submode web-mode
-;;     :face mmm-code-submode-face
-;;     :front "^.*?\~L\"\"\""
-;;     :back "^.*?\"\"\"")))
-;; (mmm-add-classes
-;;   '((elixir-eex
-;;     :submode web-mode
-;;     :face mmm-code-submode-face
-;;     :front "^.*?\~L\{"
-;;     :back "^.*?\}")))
-
-;; (mmm-add-mode-ext-class 'elixir-mode nil 'elixir-eex)
-;; ;; (add-to-list 'auto-mode-alist '("\\.leex\\'" . 'web-mode))
-
-;; (mmm-add-classes
-;;   '((elixir-sql
-;;     :submode sql-mode
-;;     :face mmm-code-submode-face
-;;     :front "\"\"\"\n[ ]+select"
-;;     :back "[ ]+\"\"\"")))
-;; (mmm-add-mode-ext-class 'elixir-mode nil 'elixir-sql)
 
 (setq lsp-enable-file-watchers t)
 (setq lsp-file-watch-threshold 3000)
@@ -345,8 +286,8 @@
 (setq lsp-dart-flutter-sdk-dir (getenv "FLUTTER_ROOT"))
 
 ;; Dart/Flutter
-(use-package lsp-mode
-  :hook (dart-mode . lsp))
+;; (use-package lsp-mode
+;;   :hook (dart-mode . lsp))
 
 (with-eval-after-load "projectile"
   (add-to-list 'projectile-project-root-files-bottom-up "pubspec.yaml")
@@ -373,6 +314,17 @@
 (setq-default lsp-ui-doc-enable nil)
 (setq lsp-ui-peek-enable nil)
 
+;; Eglot
+
+(with-eval-after-load 'eglot
+  (add-to-list 'eglot-server-programs
+               '(elixir-mode "~/elixir-ls/release/language_server.sh"))
+  (add-to-list 'eglot-server-programs
+               '(swift-mode "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp"))
+  (add-to-list 'eglot-server-programs
+               '(dart-mode (concat (getenv "FLUTTER_ROOT") "/bin/cache/dart-sdk")))
+)
+;;
 ;; Key Bindings
 (map! :leader :desc "Shell Command on Region" "|" #'shell-command-on-region)
 (map! :leader :desc "Maximize window" :prefix "w" "m" #'doom/window-maximize-buffer)
