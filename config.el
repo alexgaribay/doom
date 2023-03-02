@@ -319,10 +319,10 @@
 (with-eval-after-load 'eglot
   (add-to-list 'eglot-server-programs
                '(elixir-mode "~/elixir-ls/release/language_server.sh"))
-  (add-to-list 'eglot-server-programs
-               '(swift-mode "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp"))
-  (add-to-list 'eglot-server-programs
-               '(dart-mode (concat (getenv "FLUTTER_ROOT") "/bin/cache/dart-sdk")))
+  ;; (add-to-list 'eglot-server-programs
+  ;;              '(swift-mode "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp"))
+  ;; (add-to-list 'eglot-server-programs
+  ;;              '(dart-mode (concat (getenv "FLUTTER_ROOT") "/bin/cache/dart-sdk")))
 )
 ;;
 ;; Key Bindings
@@ -344,3 +344,10 @@
 (map! :leader :desc "Magit status" :prefix "g" "s" #'magit-status)
 (map! :leader :desc "Copy region to clipboard" :prefix "=" "c" #'clipboard-copy-region)
 (map! :leader :desc "Paste clipboard to region" :prefix "=" "v" #'clipboard-yank)
+
+(setq explicit-shell-file-name "/usr/bin/zsh")
+(setq shell-file-name "zsh")
+(setq explicit-zsh-args '("--login" "--interactive"))
+(defun zsh-shell-mode-setup ()
+  (setq-local comint-process-echoes t))
+(add-hook 'shell-mode-hook #'zsh-shell-mode-setup)
