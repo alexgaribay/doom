@@ -19,7 +19,7 @@
  '(jdee-db-spec-breakpoint-face-colors (cons "#f0f0f0" "#9ca0a4"))
  '(objed-cursor-color "#e45649")
  '(package-selected-packages
-   '(lsp-dart hover xclip tramp-term find-file-in-project counsel-tramp))
+   '(flycheck-posframe lsp-dart hover xclip tramp-term find-file-in-project counsel-tramp))
  '(pdf-view-midnight-colors (cons "#383a42" "#fafafa"))
  '(rustic-ansi-faces
    ["#fafafa" "#e45649" "#50a14f" "#986801" "#4078f2" "#a626a4" "#0184bc" "#383a42"])

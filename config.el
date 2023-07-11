@@ -42,8 +42,8 @@
 ;; They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
 ;; font string. You generally only need these two:
 ;; test
-(setq doom-font (font-spec :family "monospace" :size 16)
-      doom-variable-pitch-font (font-spec :family "Fira Mono"))
+(setq doom-font (font-spec :family "Fira Mono" :size 12.0 :dpi 110)
+      doom-variable-pitch-font (font-spec :family "Fira Mono" :size 14.0 :dpi 130))
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
@@ -108,6 +108,7 @@
   (cond
    ((equal (buffer-name) "*Ediff Control Panel*") 4)
    ((string-match-p (buffer-name) ".*\\*Treemacs\\*.*") 0)
+   ((string-match-p (buffer-name) ".*\\*NeoTree\\*.*") 0)
    (t nil)))
 
 
@@ -125,6 +126,7 @@
 
 ;; Disable line numbers in neotree
 (add-hook 'neo-after-create-hook (lambda (&optional dummy) (display-line-numbers-mode -1)))
+(set-popup-rule! "^ ?\\*NeoTree" :ignore t)
 
 ;; Tramp
 (require 'tramp)
@@ -157,16 +159,21 @@
   )
 
 ;; Window Numbering
-(after! winum
-  (winum-mode 1)
-  (setq winum-auto-assign-0-to-minibuffer nil)
-  (add-to-list 'winum-assign-functions #'winum-assign-func))
+;; (after! winum
+;;   (winum-mode 1)
+;;   (setq winum-auto-assign-0-to-minibuffer nil)
+;;   (add-to-list 'winum-assign-functions #'winum-assign-func))
 
 (after! neotree
   (setq neo-smart-open t)
-  ;; (setq projectile-switch-project-action 'neotree-projectile-action)
-  )
+  (setq projectile-switch-project-action 'neotree-projectile-action)
+)
 
+(setq  doom-themes-neotree-file-icons t)
+(with-eval-after-load 'doom-themes
+  (doom-themes-neotree-config))
+
+;;
 ;; Javascript
 
 (setq js2-basic-offset 2)
@@ -191,13 +198,13 @@
 ;;                           (require 'lsp-python-ms)
 ;;                           (lsp))))  ; or lsp-deferred
 
-(use-package vue-mode
-  :config
-  ;; 0, 1, or 2, representing (respectively) none, low, and high coloring
-  (setq mmm-submode-decoration-level 0)
-  :mode "\\.vue\\'"
-  :hook
-  (vue-mode . lsp))
+;; (use-package vue-mode
+;;   :config
+;;   ;; 0, 1, or 2, representing (respectively) none, low, and high coloring
+;;   (setq mmm-submode-decoration-level 0)
+;;   :mode "\\.vue\\'"
+;;   :hook
+;;   (vue-mode . lsp))
 
 ;; Swift
 ;; (use-package lsp-sourcekit
@@ -226,6 +233,19 @@
 ;;                      :remote? t
 ;;                      :server-id 'elixir-ls-remote))))
 
+(use-package lsp-mode
+ :commands lsp
+ :ensure t
+ :diminish lsp-mode
+ :hook
+ (elixir-mode . lsp)
+ :init
+ (add-to-list 'exec-path "~/elixir-ls/release"))
+
+(after! lsp
+  (add-hook 'elixir-mode-hook #'lsp)
+  (add-hook 'dart-mode-hook #'lsp)
+)
 
 (eval-after-load "elixir-mode"
   '(defun elixir-format--mix-executable ()
@@ -283,11 +303,15 @@
   )
 
 (setq lsp-dart-sdk-dir (concat (getenv "FLUTTER_ROOT") "/bin/cache/dart-sdk"))
-(setq lsp-dart-flutter-sdk-dir (getenv "FLUTTER_ROOT"))
+(setq lsp-dart-flutter-sdk-dir (concat (getenv "FLUTTER_ROOT") ""))
 
 ;; Dart/Flutter
-;; (use-package lsp-mode
-;;   :hook (dart-mode . lsp))
+(use-package lsp-mode
+  :hook (
+         (dart-mode . lsp)
+         (elixir-mode . lsp)
+        )
+  )
 
 (with-eval-after-load "projectile"
   (add-to-list 'projectile-project-root-files-bottom-up "pubspec.yaml")
@@ -306,7 +330,8 @@
   (map! :leader :desc "Pub upgrade" :prefix "mp" "u" #'lsp-dart-pub-upgrade)
 
   (map! :leader :desc "Dart Run" :prefix "mm" "r" #'lsp-dart-run)
-  )
+  (map! :leader :desc "Dart Run" :prefix "mf" "b" #'lsp-format-buffer)
+)
 
 ;;
 ;; LSP
@@ -316,21 +341,32 @@
 
 ;; Eglot
 
-(with-eval-after-load 'eglot
-  (add-to-list 'eglot-server-programs
-               '(elixir-mode "~/elixir-ls/release/language_server.sh"))
-  ;; (add-to-list 'eglot-server-programs
-  ;;              '(swift-mode "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp"))
-  ;; (add-to-list 'eglot-server-programs
-  ;;              '(dart-mode (concat (getenv "FLUTTER_ROOT") "/bin/cache/dart-sdk")))
-)
+;; (with-eval-after-load 'eglot
+;;   (add-to-list 'eglot-server-programs
+;;                '(elixir-mode "~/elixir-ls/release/language_server.sh"))
+;;   ;; (add-to-list 'eglot-server-programs
+;;   ;;              '(swift-mode "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp"))
+;;   ;; (add-to-list 'eglot-server-programs
+;;   ;;              '(dart-mode (concat (getenv "FLUTTER_ROOT") "/bin/cache/dart-sdk")))
+;;   (add-to-list 'eglot-server-programs
+;;                '(dart-mode . ((concat (getenv "FLUTTER_ROOT") "/bin/cache/dart-sdk/bin/dart") "language-server")))
+
+;;   (setq eldoc-echo-area-prefer-doc-buffer t
+;;     eldoc-echo-area-use-multiline-p nil)
+;; )
+
+;; (add-hook 'elixir-mode-hook 'eglot-ensure)
+;; (add-hook 'dart-mode-hook #'eglot-ensure)
+
+;; (add-hook 'elixir-mode-hook #'eglot)
+;; (add-hook 'dart-mode-hook #'eglot)
+;;
 ;;
 ;; Key Bindings
 (map! :leader :desc "Shell Command on Region" "|" #'shell-command-on-region)
 (map! :leader :desc "Maximize window" :prefix "w" "m" #'doom/window-maximize-buffer)
 (map! :leader :desc "Toggle neotree" :prefix "p" "t" #'neotree-toggle)
 (map! :leader :desc "Find file in project" :prefix "p" "f" #'+ivy/projectile-find-file)
-(map! :leader :desc "Show file in project tree" :prefix "p" "F" #'treemacs-find-file)
 (map! :leader :desc "Split vertically and focus new window" :prefix "w" "V" #'split-window-vertically-and-focus)
 (map! :leader :desc "Split horizontally and focus new window" :prefix "w" "S" #'split-window-horizontally-and-focus)
 (map! :leader
@@ -344,6 +380,8 @@
 (map! :leader :desc "Magit status" :prefix "g" "s" #'magit-status)
 (map! :leader :desc "Copy region to clipboard" :prefix "=" "c" #'clipboard-copy-region)
 (map! :leader :desc "Paste clipboard to region" :prefix "=" "v" #'clipboard-yank)
+(map! :leader :desc "Copy region to clipboard" :prefix "\\" "c" #'clipboard-copy-region)
+(map! :leader :desc "Paste clipboard to region" :prefix "\\" "v" #'clipboard-yank)
 
 (setq explicit-shell-file-name "/usr/bin/zsh")
 (setq shell-file-name "zsh")
