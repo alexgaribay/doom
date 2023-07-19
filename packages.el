@@ -57,3 +57,4 @@
 ;; (package! lsp-python-ms)
 ;; (package! lsp-sourcekit)
 (package! hover)
+(package! elixir-ts-mode)

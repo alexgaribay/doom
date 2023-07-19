@@ -42,7 +42,7 @@
 ;; They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
 ;; font string. You generally only need these two:
 ;; test
-(setq doom-font (font-spec :family "Fira Mono" :size 12.0 :dpi 110)
+(setq doom-font (font-spec :family "Fira Mono" :size 12.0 :dpi 100)
       doom-variable-pitch-font (font-spec :family "Fira Mono" :size 14.0 :dpi 130))
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
@@ -246,6 +246,8 @@
   (add-hook 'elixir-mode-hook #'lsp)
   (add-hook 'dart-mode-hook #'lsp)
 )
+
+(add-hook 'elixir-mode-hook #'elixir-ts-mode)
 
 (eval-after-load "elixir-mode"
   '(defun elixir-format--mix-executable ()
