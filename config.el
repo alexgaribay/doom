@@ -183,6 +183,10 @@
   (add-to-list 'projectile-project-root-files-bottom-up "pubspec.yaml")
   (add-to-list 'projectile-project-root-files-bottom-up "BUILD"))
 
+(use-package treesit-auto
+  :config
+  (global-treesit-auto-mode))
+
 ;; Eglot
 
 (use-package
@@ -193,13 +197,28 @@
  (add-to-list 'eglot-server-programs '(dart-mode . ((concat (getenv "FLUTTER_ROOT") "/bin/cache/dart-sdk/bin/dart") "language-server")))
 )
 
-(add-hook 'eglot-managed-mode-hook #'eldoc-box-hover-mode t)
+(use-package
+ eldoc-box
+ :ensure nil
+ :config
+ (add-hook 'eglot-managed-mode-hook #'eldoc-box-hover-mode t)
+)
 
 ;; Elixir
 
 (use-package
  elixir-ts-mode
- :hook (elixir-ts-mode . eglot-ensure))
+ :hook (elixir-ts-mode . eglot-ensure)
+ :hook (elixir-ts-mode . exunit-mode)
+ :config
+ (map! :leader :desc "Format buffer" :prefix "c" "f" #'eglot-format-buffer)
+ (map! :leader :desc "Format buffer" :prefix "mf" "b" #'eglot-format-buffer)
+ (map! :leader
+ :prefix "mt"
+         :nv :desc "Test" "t" #'exunit-verify-single
+         :nv "b" #'exunit-verify
+         :nv "a" #'exunit-verify-all)
+)
 
 (use-package flycheck-mode
   :hook elixir-ts-mode
