@@ -187,6 +187,16 @@
   :config
   (global-treesit-auto-mode))
 
+;; ox-reveal
+;;
+(use-package
+  ox-reveal
+  :ensure nil
+  :config
+  (setq org-reveal-root (contact "file://" (getenv "REVEAL_ROOT")))
+  (setq org-reveal-highlight-css "atom-one-light.css")
+)
+
 ;; Eglot
 
 (use-package
@@ -194,15 +204,17 @@
  :ensure nil
  :config
  (add-to-list 'eglot-server-programs '(elixir-ts-mode "~/elixir-ls/release/language_server.sh"))
- (add-to-list 'eglot-server-programs '(dart-mode . ((concat (getenv "FLUTTER_ROOT") "/bin/cache/dart-sdk/bin/dart") "language-server")))
+ (add-to-list 'eglot-server-programs '(dart-mode . ("~/flutter/bin/cache/dart-sdk/bin/dart" "language-server")))
 )
 
-(use-package
- eldoc-box
- :ensure nil
- :config
- (add-hook 'eglot-managed-mode-hook #'eldoc-box-hover-mode t)
-)
+;; (use-package
+;;  eldoc-box
+;;  :ensure nil
+;;  :config
+;;  (add-hook 'eglot-managed-mode-hook #'eldoc-box-hover-mode t)
+;;  (setq eldoc-box-max-pixel-height 500)
+;;  (setq eldoc-box-max-pixel-width 500)
+;; )
 
 ;; Elixir
 
@@ -230,7 +242,10 @@
 
 (use-package
   dart-mode
-  :hook (dart-mode . eglot-ensure))
+  :hook (dart-mode . eglot-ensure)
+  :config
+  (map! :leader :desc "Format buffer" :prefix "mf" "b" #'eglot-format-buffer)
+)
 
 (use-package
  emacs

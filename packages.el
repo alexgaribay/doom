@@ -58,5 +58,6 @@
 (package! flycheck-credo)
 (package! elixir-ts-mode)
 (package! treesit-auto)
-(package! eldoc-box)
+;;(package! eldoc-box)
 (package! exunit)
+(package! ox-reveal)
