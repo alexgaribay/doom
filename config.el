@@ -193,7 +193,7 @@
   ox-reveal
   :ensure nil
   :config
-  (setq org-reveal-root (contact "file://" (getenv "REVEAL_ROOT")))
+  (setq org-reveal-root (concat "file://" (getenv "REVEAL_ROOT")))
   (setq org-reveal-highlight-css "atom-one-light.css")
 )
 
