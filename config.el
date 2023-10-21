@@ -203,7 +203,8 @@
  eglot
  :ensure nil
  :config
- (add-to-list 'eglot-server-programs '(elixir-ts-mode "~/elixir-ls/release/language_server.sh"))
+ ;;(add-to-list 'eglot-server-programs '(elixir-ts-mode "~/elixir-ls/release/language_server.sh"))
+ (add-to-list 'eglot-server-programs '(elixir-ts-mode . ("nextls" "--stdio")))
  (add-to-list 'eglot-server-programs '(dart-mode . ("~/flutter/bin/cache/dart-sdk/bin/dart" "language-server")))
 )
 
