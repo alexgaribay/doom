@@ -194,7 +194,8 @@
   :ensure nil
   :config
   (setq org-reveal-root (concat "file://" (getenv "REVEAL_ROOT")))
-  (setq org-reveal-highlight-css "atom-one-light.css")
+  (setq org-reveal-highlight-css "%r/plugin/highlight/atom-one-light.css")
+  (setq org-reveal-title-slide nil)
 )
 
 ;; Eglot
