@@ -179,6 +179,9 @@
 (setq web-mode-block-padding 2)
 (setq web-mode-part-padding 2)
 
+(with-eval-after-load "ediff"
+  (add-hook 'ediff-before-setup-windows-hook #'neotree-hide))
+
 (with-eval-after-load "projectile"
   (add-to-list 'projectile-project-root-files-bottom-up "pubspec.yaml")
   (add-to-list 'projectile-project-root-files-bottom-up "BUILD"))
@@ -258,6 +261,7 @@
     (elixir "https://github.com/elixir-lang/tree-sitter-elixir")))
 )
 
+(add-to-list 'auto-mode-alist '("\\.heex\\'" . heex-ts-mode))
 ;;
 ;; Key Bindings
 (map! :leader :desc "Shell Command on Region" "|" #'shell-command-on-region)
