@@ -61,3 +61,6 @@
 ;;(package! eldoc-box)
 (package! exunit)
 (package! ox-reveal)
+(package! treemacs-all-the-icons)
+(package! rust-mode)
+(package! gptel)

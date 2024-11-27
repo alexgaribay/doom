@@ -18,6 +18,14 @@
 
 ;; Custom functions
 
+(defun file-notify-rm-all-watches ()
+  "Remove all existing file notification watches from Emacs."
+  (interactive)
+  (maphash
+   (lambda (key _value)
+     (file-notify-rm-watch key))
+   file-notify-descriptors))
+
 (defun clipboard-copy-region (&optional b e)
   (interactive "r")
   (shell-command-on-region b e "pbcopy"))
@@ -157,6 +165,7 @@
 (after! neotree
   (setq neo-smart-open t)
   (setq projectile-switch-project-action 'neotree-projectile-action)
+  (setq neo-window-width 60)
 )
 
 (setq  doom-themes-neotree-file-icons t)
@@ -207,10 +216,18 @@
  eglot
  :ensure nil
  :config
- ;;(add-to-list 'eglot-server-programs '(elixir-ts-mode "~/elixir-ls/release/language_server.sh"))
- (add-to-list 'eglot-server-programs '(elixir-ts-mode . ("nextls" "--stdio")))
+ (add-to-list 'eglot-server-programs '(elixir-ts-mode "~/elixir-ls/release/language_server.sh"))
+ (add-to-list 'eglot-server-programs '(heex-ts-mode "~/elixir-ls/release/language_server.sh"))
+ ;;(add-to-list 'eglot-server-programs '(elixir-ts-mode . ("nextls" "--stdio")))
+ ;;(add-to-list 'eglot-server-programs '(heex-ts-mode . ("nextls" "--stdio")))
+(add-to-list 'eglot-server-programs '((rust-ts-mode rust-mode) . ("/opt/homebrew/opt/rust-analyzer/bin/rust-analyzer" :initializationOptions (:check (:command "clippy")))))
  (add-to-list 'eglot-server-programs '(dart-mode . ("~/flutter/bin/cache/dart-sdk/bin/dart" "language-server")))
 )
+
+(use-package rust-mode
+  :init
+  (setq rust-mode-treesitter-derive t))
+(add-hook 'rust-mode-hook 'eglot-ensure)
 
 ;; (use-package
 ;;  eldoc-box
@@ -223,15 +240,27 @@
 
 ;; Elixir
 
+(defun mix-format ()
+  (interactive)
+  (let ((default-directory (projectile-project-root)))
+    (compilation-start "mix format")))
+
+(defun mix-format-buffer ()
+  (interactive)
+  (let* ((default-directory (projectile-project-root))
+         (current-buffer-name (buffer-file-name))
+         (file-name (file-relative-name current-buffer-name default-directory)))
+    (compilation-start (format "mix format %s" file-name))))
+
 (use-package
  elixir-ts-mode
  :hook (elixir-ts-mode . eglot-ensure)
  :hook (elixir-ts-mode . exunit-mode)
  :config
- (map! :leader :desc "Format buffer" :prefix "c" "f" #'eglot-format-buffer)
- (map! :leader :desc "Format buffer" :prefix "mf" "b" #'eglot-format-buffer)
- (map! :leader
- :prefix "mt"
+ (map! :after elixir-ts-mode :map elixir-ts-mode-map :leader :desc "Format buffer" :prefix "c" "f" #'mix-format-buffer)
+ (map! :after elixir-ts-mode :map elixir-ts-mode-map :leader :desc "Format buffer" :prefix "mf" "b" #'mix-format-buffer)
+ (map! :after elixir-ts-mode :map elixir-ts-mode-map :leader :desc "Format all" :prefix "mf" "a" #'mix-format)
+ (map! :after elixir-ts-mode :map elixir-ts-mode-map :leader :prefix "mt"
          :nv :desc "Test" "t" #'exunit-verify-single
          :nv "b" #'exunit-verify
          :nv "a" #'exunit-verify-all)
@@ -245,12 +274,51 @@
 
 ;; Dart
 
+(defun custom-flutter-test-package ()
+  (interactive)
+  (let ((default-directory (projectile-project-root)))
+    (compilation-start "flutter test -r github")))
+
+(defun custom-flutter-test-buffer ()
+  (interactive)
+  (let* ((default-directory (projectile-project-root))
+         (current-buffer-name (buffer-file-name))
+         (file-name (file-relative-name current-buffer-name default-directory)))
+    (compilation-start (format "flutter test %s -r github" file-name))))
+
+(defun custom-flutter-test-at-point ()
+  (interactive)
+  (let* ((default-directory (projectile-project-root))
+         (current-buffer-name (buffer-file-name))
+         (file-name (file-relative-name current-buffer-name default-directory))
+         (line-number (line-number-at-pos (point))))
+    (compilation-start (format "flutter test \"%s?line=%d\" -r github" file-name line-number))))
+
+(defun custom-dart-format-package ()
+  (interactive)
+  (let ((default-directory (projectile-project-root)))
+    (compilation-start "dart format .")))
+
+(defun custom-dart-format-buffer ()
+  (interactive)
+  (let* ((default-directory (projectile-project-root))
+         (current-buffer-name (buffer-file-name))
+         (file-name (file-relative-name current-buffer-name default-directory)))
+    (compilation-start (format "dart format %s" file-name))))
+
+
 (use-package
   dart-mode
   :hook (dart-mode . eglot-ensure)
   :config
-  (map! :leader :desc "Format buffer" :prefix "mf" "b" #'eglot-format-buffer)
+  (map! :after dart-mode :map dart-mode-map :leader :desc "Format package" :prefix "mf" "a" #'custom-dart-format-package)
+  (map! :after dart-mode :map dart-mode-map :leader :desc "Format buffer" :prefix "mf" "b" #'custom-dart-format-buffer)
+  (map! :after dart-mode :map dart-mode-map :leader :desc "Test at point" :prefix "mt" "t" #'custom-flutter-test-at-point)
+  (map! :after dart-mode :map dart-mode-map :leader :desc "Test buffer" :prefix "mt" "b" #'custom-flutter-test-buffer)
+  (map! :after dart-mode :map dart-mode-map :leader :desc "Test package" :prefix "mt" "a" #'custom-flutter-test-package)
 )
+
+;; Treesitter languages
 
 (use-package
  emacs
@@ -262,11 +330,28 @@
 )
 
 (add-to-list 'auto-mode-alist '("\\.heex\\'" . heex-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-ts-mode))
+
+;; AI Codegen
+
+(setq
+ gptel-model "claude-3-5-sonnet-20240620"
+ gptel-backend (gptel-make-anthropic "Claude"
+                 :stream t
+                 :key (getenv "ANTHROPIC_KEY")))
+
+(map! :leader :desc "Add to context" :prefix "j" "a" #'gptel-add)
+(map! :leader :desc "Open chat" :prefix "j" "c" #'gptel)
+(map! :leader :desc "Prompt options" :prefix "j" "m" #'gptel-menu)
+(map! :leader :desc "Send prompt" :prefix "j" "s" #'gptel-send)
+
+
 ;;
 ;; Key Bindings
 (map! :leader :desc "Shell Command on Region" "|" #'shell-command-on-region)
 (map! :leader :desc "Maximize window" :prefix "w" "m" #'doom/window-maximize-buffer)
 (map! :leader :desc "Toggle neotree" :prefix "p" "t" #'neotree-toggle)
+(map! :leader :desc "Shell at project root" :prefix "p" "!" #'project-eshell)
 ;;(map! :leader :desc "Find file in project" :prefix "p" "f" #'+ivy/projectile-find-file)
 (map! :leader :desc "Split vertically and focus new window" :prefix "w" "V" #'split-window-vertically-and-focus)
 (map! :leader :desc "Split horizontally and focus new window" :prefix "w" "S" #'split-window-horizontally-and-focus)
@@ -276,7 +361,7 @@
       :desc "Select Window 2"     "2" #'winum-select-window-2
       :desc "Select Window 3"     "3" #'winum-select-window-3
       :desc "Select Window 3"     "4" #'winum-select-window-4)
-(map! :leader :desc "Jump to symbol" :prefix "s" "j" #'imenu)
+;;(map! :leader :desc "Jump to symbol" :prefix "s" "j" #'imenu)
 (map! :leader :desc "Search project" "/" #'+default/search-project)
 (map! :leader :desc "Magit status" :prefix "g" "s" #'magit-status)
 (map! :leader :desc "Copy region to clipboard" :prefix "=" "c" #'clipboard-copy-region)

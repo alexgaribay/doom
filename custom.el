@@ -20,7 +20,7 @@
  '(magit-todos-insert-after '(bottom) nil nil "Changed by setter of obsolete option `magit-todos-insert-at'")
  '(objed-cursor-color "#e45649")
  '(package-selected-packages
-   '(flycheck-posframe lsp-dart hover xclip tramp-term find-file-in-project counsel-tramp))
+   '(rust-mode zen-mode all-the-icons flycheck-posframe lsp-dart hover xclip tramp-term find-file-in-project counsel-tramp))
  '(pdf-view-midnight-colors (cons "#383a42" "#fafafa"))
  '(rustic-ansi-faces
    ["#fafafa" "#e45649" "#50a14f" "#986801" "#4078f2" "#a626a4" "#0184bc" "#383a42"])
