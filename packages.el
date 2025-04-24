@@ -62,5 +62,7 @@
 (package! exunit)
 (package! ox-reveal)
 (package! treemacs-all-the-icons)
-(package! rust-mode)
 (package! gptel)
+(package! eglot-booster :recipe (:host github :type git :repo "jdtsmith/eglot-booster"))
+(package! prettier-js)
+;;(package! aider :recipe (:host github :repo "tninja/aider.el" :files ("aider.el" "aider-doom.el")))

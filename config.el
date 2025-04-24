@@ -162,6 +162,9 @@
 ;;   (setq winum-auto-assign-0-to-minibuffer nil)
 ;;   (add-to-list 'winum-assign-functions #'winum-assign-func))
 
+(setq resize-mini-windows t)
+;;(setq max-mini-window-height)
+
 (after! neotree
   (setq neo-smart-open t)
   (setq projectile-switch-project-action 'neotree-projectile-action)
@@ -220,9 +223,17 @@
  (add-to-list 'eglot-server-programs '(heex-ts-mode "~/elixir-ls/release/language_server.sh"))
  ;;(add-to-list 'eglot-server-programs '(elixir-ts-mode . ("nextls" "--stdio")))
  ;;(add-to-list 'eglot-server-programs '(heex-ts-mode . ("nextls" "--stdio")))
-(add-to-list 'eglot-server-programs '((rust-ts-mode rust-mode) . ("/opt/homebrew/opt/rust-analyzer/bin/rust-analyzer" :initializationOptions (:check (:command "clippy")))))
- (add-to-list 'eglot-server-programs '(dart-mode . ("~/flutter/bin/cache/dart-sdk/bin/dart" "language-server")))
+ (add-to-list 'eglot-server-programs '((rust-ts-mode rust-mode) . ("/opt/homebrew/opt/rust-analyzer/bin/rust-analyzer" :initializationOptions (:check (:command "clippy")))))
+ (add-to-list 'eglot-server-programs '(dart-mode . ("dart" "language-server")))
+ ;;(add-to-list 'eglot-server-programs '(dart-mode . ("~/flutter/bin/cache/dart-sdk/bin/dart" "language-server")))
 )
+
+(use-package eglot-booster
+  :after eglot
+  :config
+  (eglot-booster-mode)
+  (setq eglot-booster-io-only t)
+  )
 
 (use-package rust-mode
   :init
@@ -335,10 +346,21 @@
 ;; AI Codegen
 
 (setq
- gptel-model "claude-3-5-sonnet-20240620"
- gptel-backend (gptel-make-anthropic "Claude"
-                 :stream t
-                 :key (getenv "ANTHROPIC_KEY")))
+ gptel-model "deepseek-r1:14b"
+ gptel-backend (gptel-make-ollama "Ollama"             ;Any name of your choosing
+                 :host "localhost:11434"               ;Where it's running
+                 :stream t                             ;Stream responses
+                 :models '(deepseek-r1:14b deepseek-r1:32b)))
+
+;; (setq
+;;  gptel-model "claude-3-5-sonnet-20240620"
+;;  gptel-backend (gptel-make-anthropic "Claude"
+;;                  :stream t
+;;                  :key (getenv "ANTHROPIC_KEY")))
+
+
+;; Aider
+;;(use-package aider)
 
 (map! :leader :desc "Add to context" :prefix "j" "a" #'gptel-add)
 (map! :leader :desc "Open chat" :prefix "j" "c" #'gptel)
