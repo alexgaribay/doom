@@ -188,15 +188,23 @@
 (setq typescript-indent-level 2)
 
 (use-package lsp-mode
-  :hook ((javascript-mode . lsp-deferred)
+  :hook ((elixir-mode . lsp-deferred)
+         (elixir-ts-mode . lsp-deferred)
+         (heex-mode . lsp-deferred)
+         (heex-ts-mode . lsp-deferred)
+         (javascript-mode . lsp-deferred)
          (js-mode . lsp-deferred)
          (js-ts-mode . lsp-deferred)
          (typescript-mode . lsp-deferred)
          (typescript-ts-mode . lsp-deferred)
          (tsx-ts-mode . lsp-deferred)
-         (web-mode . lsp-deferred))
+         (web-mode . lsp-deferred)
+         (rust-mode . lsp-deferred)
+         (rustic-mode . lsp-deferred)
+         (rust-ts-mode . lsp-deferred))
   :commands (lsp lsp-deferred)
   :config
+  (require 'seq)
   (setq lsp-auto-guess-root t)
   (setq lsp-prefer-flymake nil)
   (setq lsp-enable-file-watchers nil)
@@ -216,12 +224,15 @@
   (setq lsp-completion-show-kind t)
   ;; Enable additional text edits for auto-imports and prop completion
   (setq lsp-completion-enable-additional-text-edit nil)
-  ;; Elixir LS configuration
-  (lsp-register-client
-   (make-lsp-client :new-connection (lsp-stdio-connection "~/elixir-ls/release/language_server.sh")
-                    :major-modes '(elixir-ts-mode heex-ts-mode elixir-mode)
-                    :priority -1
-                    :server-id 'elixir-ls)))
+  ;; Prefer a locally installed elixir-ls if available
+  (let* ((elixir-ls-candidates
+          (mapcar #'expand-file-name
+                  '("~/elixir-ls/language_server.sh"
+                    "~/elixir-ls/release/language_server.sh")))
+         (elixir-ls (or (executable-find "elixir-ls")
+                        (seq-find #'file-executable-p elixir-ls-candidates))))
+    (when elixir-ls
+      (setq lsp-elixir-server-command (list elixir-ls)))))
 
 ;; Company configuration for better React completions
 (after! company
@@ -246,6 +257,27 @@
      ("typescript.suggest.autoImports" t t)
      ("typescript.preferences.generateReturnInDocTemplate" t t)))
   )
+
+(after! lsp-rust
+  (setq lsp-rust-analyzer-cargo-watch-command "clippy"
+        lsp-rust-analyzer-proc-macro-enable t
+        lsp-rust-analyzer-server-display-inlay-hints t
+        lsp-rust-analyzer-display-lifetime-elision-hints-enable "skip_trivial"
+        lsp-rust-analyzer-display-chaining-hints t))
+
+(after! lsp-elixir
+  ;; Mirror the defaults exposed by the ElixirLS VS Code extension.
+  (setq lsp-elixir-auto-build t
+        lsp-elixir-dialyzer-enabled t
+        lsp-elixir-incremental-dialyzer nil
+        lsp-elixir-dialyzer-format "dialyxir_long"
+        lsp-elixir-fetch-deps nil
+        lsp-elixir-mix-env "test"
+        lsp-elixir-mix-target nil
+        lsp-elixir-suggest-specs t
+        lsp-elixir-auto-insert-required-alias t
+        lsp-elixir-signature-after-complete t
+        lsp-elixir-enable-test-lenses t))
 
 ;; Key bindings for React prop assistance
 (map! :after js2-mode
@@ -272,6 +304,22 @@
       :map tsx-ts-mode-map
       :localleader
       :desc "Add missing props" "a p" #'lsp-execute-code-action)
+
+(after! rustic
+  ;; Align Rust test bindings with Elixir's test leader prefix.
+  (map! :map rustic-mode-map
+        :leader
+        :prefix "mt"
+        :desc "Test at point" "t" #'rustic-cargo-current-test
+        :desc "Test module/buffer" "b" #'rustic-cargo-test-dwim
+        :desc "Test project" "a" #'rustic-cargo-test)
+  (when (boundp 'rust-ts-mode-map)
+    (map! :map rust-ts-mode-map
+          :leader
+          :prefix "mt"
+          :desc "Test at point" "t" #'rustic-cargo-current-test
+          :desc "Test module/buffer" "b" #'rustic-cargo-test-dwim
+          :desc "Test project" "a" #'rustic-cargo-test)))
 
 (use-package lsp-tailwindcss
   :init
@@ -302,6 +350,7 @@
 
 (use-package treesit-auto
   :config
+  (setq treesit-auto-install 'prompt)
   (global-treesit-auto-mode))
 
 ;; Terminal configuration
@@ -311,70 +360,6 @@
   ;; Disable evil-mode in vterm
   (evil-set-initial-state 'vterm-mode 'emacs))
 
-(after! eat
-  ;; Adjust line spacing - values: 0.1, 0.2, etc. (higher = more spacing)
-  (setq-hook! 'eat-mode-hook line-spacing 0.1)
-  ;; Disable line numbers in eat
-  (add-hook 'eat-mode-hook (lambda () (display-line-numbers-mode -1)))
-  ;; Alternative: set specific pixel spacing
-  ;; (setq-hook! 'eat-mode-hook line-spacing 2)
-  )
-
-;; Claude Code IDE configuration
-(with-eval-after-load 'claude-code-ide
-  (claude-code-ide-emacs-tools-setup)
-  ;; Configure terminal backend
-  ;;(setq claude-code-ide-terminal-backend 'eat)
-  ;; Try to fix port issues
-  (setq claude-code-ide-auto-start nil))
-
-;; AI Code Interface configuration - temporarily disabled due to port issues
-(use-package ai-code-interface
-  :after transient
-  :config
-  (ai-code-set-backend 'claude-code-ide)  ; Use claude-code-ide as backend
-  ;; Enable global keybinding for the main menu
-  (global-set-key (kbd "C-c a") #'ai-code-menu)
-  ;; Set up Magit integration when available
-  (with-eval-after-load 'magit
-    (ai-code-magit-setup-transients)))
-
-
-;; Eglot
-
-;; (use-package
-;;  eglot
-;;  :ensure nil
-;;  :config
-;;  (add-to-list 'eglot-server-programs '(elixir-ts-mode "~/elixir-ls/release/language_server.sh"))
-;;  (add-to-list 'eglot-server-programs '(heex-ts-mode "~/elixir-ls/release/language_server.sh"))
-;;  ;;(add-to-list 'eglot-server-programs '(elixir-ts-mode . ("nextls" "--stdio")))
-;;  ;;(add-to-list 'eglot-server-programs '(heex-ts-mode . ("nextls" "--stdio")))
-;;  (add-to-list 'eglot-server-programs '((rust-ts-mode rust-mode) . ("/opt/homebrew/opt/rust-analyzer/bin/rust-analyzer" :initializationOptions (:check (:command "clippy")))))
-;;  (add-to-list 'eglot-server-programs '(dart-mode . ("dart" "language-server")))
-;;  ;;(add-to-list 'eglot-server-programs '(dart-mode . ("~/flutter/bin/cache/dart-sdk/bin/dart" "language-server")))
-;; )
-
-;;(use-package eglot-booster
-;;  :after eglot
-;;  :config
-;;  (eglot-booster-mode)
-;;  (setq eglot-booster-io-only t)
-;;  )
-
-;; (use-package rust-mode
-;;   :init
-;;   (setq rust-mode-treesitter-derive t))
-;; (add-hook 'rust-mode-hook 'eglot-ensure)
-
-;; (use-package
-;;  eldoc-box
-;;  :ensure nil
-;;  :config
-;;  (add-hook 'eglot-managed-mode-hook #'eldoc-box-hover-mode t)
-;;  (setq eldoc-box-max-pixel-height 500)
-;;  (setq eldoc-box-max-pixel-width 500)
-;; )
 
 ;; Elixir
 
@@ -411,52 +396,6 @@
   :config
   (flycheck-credo-setup))
 
-;; Dart
-
-(defun custom-flutter-test-package ()
-  (interactive)
-  (let ((default-directory (projectile-project-root)))
-    (compilation-start "flutter test -r github")))
-
-(defun custom-flutter-test-buffer ()
-  (interactive)
-  (let* ((default-directory (projectile-project-root))
-         (current-buffer-name (buffer-file-name))
-         (file-name (file-relative-name current-buffer-name default-directory)))
-    (compilation-start (format "flutter test %s -r github" file-name))))
-
-(defun custom-flutter-test-at-point ()
-  (interactive)
-  (let* ((default-directory (projectile-project-root))
-         (current-buffer-name (buffer-file-name))
-         (file-name (file-relative-name current-buffer-name default-directory))
-         (line-number (line-number-at-pos (point))))
-    (compilation-start (format "flutter test \"%s?line=%d\" -r github" file-name line-number))))
-
-(defun custom-dart-format-package ()
-  (interactive)
-  (let ((default-directory (projectile-project-root)))
-    (compilation-start "dart format .")))
-
-(defun custom-dart-format-buffer ()
-  (interactive)
-  (let* ((default-directory (projectile-project-root))
-         (current-buffer-name (buffer-file-name))
-         (file-name (file-relative-name current-buffer-name default-directory)))
-    (compilation-start (format "dart format %s" file-name))))
-
-
-;; (use-package
-;;   dart-mode
-;;   :hook (dart-mode . eglot-ensure)
-;;   :config
-;;   (map! :after dart-mode :map dart-mode-map :leader :desc "Format package" :prefix "mf" "a" #'custom-dart-format-package)
-;;   (map! :after dart-mode :map dart-mode-map :leader :desc "Format buffer" :prefix "mf" "b" #'custom-dart-format-buffer)
-;;   (map! :after dart-mode :map dart-mode-map :leader :desc "Test at point" :prefix "mt" "t" #'custom-flutter-test-at-point)
-;;   (map! :after dart-mode :map dart-mode-map :leader :desc "Test buffer" :prefix "mt" "b" #'custom-flutter-test-buffer)
-;;   (map! :after dart-mode :map dart-mode-map :leader :desc "Test package" :prefix "mt" "a" #'custom-flutter-test-package)
-;; )
-
 ;; Treesitter languages
 
 (use-package
@@ -474,6 +413,16 @@
      (json "https://github.com/tree-sitter/tree-sitter-json")
      (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
   )
+
+(dolist (mapping '((elixir-mode . elixir-ts-mode)
+                   (heex-mode . heex-ts-mode)
+                   (javascript-mode . js-ts-mode)
+                   (js-mode . js-ts-mode)
+                   (typescript-mode . typescript-ts-mode)
+                   (tsx-mode . tsx-ts-mode)
+                   (rust-mode . rust-ts-mode)))
+  (when (fboundp (cdr mapping))
+    (add-to-list 'major-mode-remap-alist mapping)))
 
 (add-to-list 'auto-mode-alist '("\\.heex\\'" . heex-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-ts-mode))
@@ -511,8 +460,6 @@
    (yaml-ts-mode . combobulate-mode)
    (typescript-ts-mode . combobulate-mode)
    (tsx-ts-mode . combobulate-mode)))
-
-;; AI Codegen
 
 ;;
 ;; Key Bindings

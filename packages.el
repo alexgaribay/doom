@@ -51,7 +51,6 @@
 (package! find-file-in-project)
 (package! neotree)
 (package! treemacs :disable t)
-(package! eat)
 (package! flycheck-credo)
 (package! treesit-auto)
 (package! treemacs-all-the-icons)
@@ -59,10 +58,3 @@
 (package! lsp-tailwindcss :recipe (:host github :repo "merrickluo/lsp-tailwindcss"))
 (package! apheleia)
 (package! combobulate)
-;; Transient for AI interface menus
-(package! transient)
-;; Additional Claude integrations
-(package! claude-code-ide :recipe (:host github :repo "manzaltu/claude-code-ide.el"))
-(package! claude-code :recipe (:host github :repo "stevemolitor/claude-code.el"))
-;; Unified AI interface (supports Claude Code, OpenAI Codex, etc.)
-(package! ai-code-interface :recipe (:host github :repo "tninja/ai-code-interface.el"))
