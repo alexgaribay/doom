@@ -58,3 +58,4 @@
 (package! lsp-tailwindcss :recipe (:host github :repo "merrickluo/lsp-tailwindcss"))
 (package! apheleia)
 (package! combobulate)
+(package! consult-lsp)

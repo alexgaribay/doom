@@ -204,7 +204,6 @@
          (rust-ts-mode . lsp-deferred))
   :commands (lsp lsp-deferred)
   :config
-  (require 'seq)
   (setq lsp-auto-guess-root t)
   (setq lsp-prefer-flymake nil)
   (setq lsp-enable-file-watchers nil)
@@ -218,21 +217,18 @@
   (setq lsp-lens-enable t)
   (setq lsp-signature-auto-activate nil)
   (setq lsp-eldoc-enable-hover nil)
+  (add-to-list 'exec-path (expand-file-name "~/elixir-ls/release"))
   ;; Enable completion at point for JSX/TSX
   (setq lsp-completion-provider :none)
   (setq lsp-completion-show-detail t)
   (setq lsp-completion-show-kind t)
   ;; Enable additional text edits for auto-imports and prop completion
   (setq lsp-completion-enable-additional-text-edit nil)
-  ;; Prefer a locally installed elixir-ls if available
-  (let* ((elixir-ls-candidates
-          (mapcar #'expand-file-name
-                  '("~/elixir-ls/language_server.sh"
-                    "~/elixir-ls/release/language_server.sh")))
-         (elixir-ls (or (executable-find "elixir-ls")
-                        (seq-find #'file-executable-p elixir-ls-candidates))))
-    (when elixir-ls
-      (setq lsp-elixir-server-command (list elixir-ls)))))
+  ;; Prefer the manually installed ElixirLS in ~/elixir-ls if present
+  (let ((elixir-ls (expand-file-name "~/elixir-ls/release/language_server.sh")))
+    (when (file-executable-p elixir-ls)
+      (setq lsp-elixir-local-server-command elixir-ls
+            lsp-elixir-server-command (list elixir-ls)))))
 
 ;; Company configuration for better React completions
 (after! company
@@ -304,6 +300,14 @@
       :map tsx-ts-mode-map
       :localleader
       :desc "Add missing props" "a p" #'lsp-execute-code-action)
+
+(use-package consult-lsp
+  :after lsp-mode
+  :commands consult-lsp-file-symbols consult-lsp-symbols
+  :init
+  (map! :leader
+        :prefix ("s" . "search")
+        :desc "Symbols in buffer" "j" #'consult-lsp-file-symbols))
 
 (after! rustic
   ;; Align Rust test bindings with Elixir's test leader prefix.
