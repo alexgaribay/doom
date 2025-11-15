@@ -58,4 +58,5 @@
 (package! lsp-tailwindcss :recipe (:host github :repo "merrickluo/lsp-tailwindcss"))
 (package! apheleia)
 (package! combobulate)
+(package! lsp-booster :recipe (:host github :repo "blahgeek/emacs-lsp-booster" :files ("*.el")))
 (package! consult-lsp)

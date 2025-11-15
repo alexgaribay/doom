@@ -14,7 +14,10 @@
 
 (setq tramp-shell-prompt-pattern "^[^$>\n]*[#$%>] *\\(\[[0-9;]*[a-zA-Z] *\\)*")
 
-(setq package-native-compile t)
+(setq-default package-native-compile t
+              load-prefer-newer t
+              native-comp-deferred-compilation t
+              native-comp-jit-compilation t)
 
 ;; Performance optimizations from modern TypeScript config
 (setq read-process-output-max (* 1024 1024))
@@ -194,6 +197,8 @@
          (elixir-ts-mode . lsp-deferred)
          (heex-mode . lsp-deferred)
          (heex-ts-mode . lsp-deferred)
+         (kotlin-mode . lsp-deferred)
+         (kotlin-ts-mode . lsp-deferred)
          (javascript-mode . lsp-deferred)
          (js-mode . lsp-deferred)
          (js-ts-mode . lsp-deferred)
@@ -206,9 +211,11 @@
          (rust-ts-mode . lsp-deferred))
   :commands (lsp lsp-deferred)
   :config
+  (setq lsp-use-plists t)
+  (setq lsp-use-native-json t)
   (setq lsp-auto-guess-root t)
   (setq lsp-prefer-flymake nil)
-  (setq lsp-enable-file-watchers nil)
+  (setq lsp-enable-file-watchers t)
   (setq lsp-enable-folding nil)
   (setq lsp-enable-symbol-highlighting t)
   (setq lsp-enable-text-document-color nil)
@@ -226,11 +233,18 @@
   (setq lsp-completion-show-kind t)
   ;; Enable additional text edits for auto-imports and prop completion
   (setq lsp-completion-enable-additional-text-edit nil)
-  ;; Prefer the manually installed ElixirLS in ~/elixir-ls if present
-  (let ((elixir-ls (expand-file-name "~/elixir-ls/release/language_server.sh")))
-    (when (file-executable-p elixir-ls)
-      (setq lsp-elixir-local-server-command elixir-ls
-            lsp-elixir-server-command (list elixir-ls)))))
+  (dolist (pair '((kotlin-mode . "kotlin")
+                  (kotlin-ts-mode . "kotlin")))
+    (add-to-list 'lsp-language-id-configuration pair))
+  ;; Prefer a locally installed elixir-ls if available
+  (let* ((elixir-ls-candidates
+          (mapcar #'expand-file-name
+                  '("~/elixir-ls/language_server.sh"
+                    "~/elixir-ls/release/language_server.sh")))
+         (elixir-ls (or (executable-find "elixir-ls")
+                        (seq-find #'file-executable-p elixir-ls-candidates))))
+    (when elixir-ls
+      (setq lsp-elixir-server-command (list elixir-ls)))))
 
 ;; Company configuration for better React completions
 (after! company
@@ -255,6 +269,30 @@
      ("typescript.suggest.autoImports" t t)
      ("typescript.preferences.generateReturnInDocTemplate" t t)))
   )
+
+(after! lsp-kotlin
+  ;; Prefer JetBrains' kotlin-lsp if it is installed; otherwise fall back to the
+  ;; default executable name expected by lsp-mode.
+  (when-let ((kotlin-lsp (executable-find "kotlin-lsp")))
+    (setq lsp-clients-kotlin-server-executable kotlin-lsp)))
+
+(after! lsp-mode
+  ;; Ignore custom notifications emitted by semgrep-lsp that lsp-mode doesn't know yet.
+  (when (boundp 'lsp-notification-handlers)
+    (puthash "semgrep/rulesRefreshed" #'ignore lsp-notification-handlers))
+  (when (and (executable-find "emacs-lsp-booster")
+             (require 'lsp-booster nil t))
+    (lsp-booster-setup)))
+
+(after! persp-mode
+  (defun ag/+workspace-buffer-list-safe (orig-fn &optional persp)
+    "Fallback to `buffer-list' if there is no active workspace.
+Avoids user errors when Doom's workspace machinery runs during shutdown."
+    (let ((persp (or persp (and persp-mode (+workspace-current)))))
+      (if (+workspace-p persp)
+          (funcall orig-fn persp)
+        (buffer-list))))
+  (advice-add #'+workspace-buffer-list :around #'ag/+workspace-buffer-list-safe))
 
 (after! lsp-rust
   (setq lsp-rust-analyzer-cargo-watch-command "clippy"
@@ -357,6 +395,7 @@
 (use-package treesit-auto
   :config
   (setq treesit-auto-install 'prompt)
+  (add-to-list 'treesit-auto-langs 'kotlin)
   (global-treesit-auto-mode))
 
 ;; Terminal configuration
@@ -411,6 +450,7 @@
   (treesit-language-source-alist
    '((heex "https://github.com/phoenixframework/tree-sitter-heex")
      (elixir "https://github.com/elixir-lang/tree-sitter-elixir")
+     (kotlin "https://github.com/fwcd/tree-sitter-kotlin")
      (javascript "https://github.com/tree-sitter/tree-sitter-javascript")
      (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
      (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
@@ -422,6 +462,7 @@
 
 (dolist (mapping '((elixir-mode . elixir-ts-mode)
                    (heex-mode . heex-ts-mode)
+                   (kotlin-mode . kotlin-ts-mode)
                    (javascript-mode . js-ts-mode)
                    (js-mode . js-ts-mode)
                    (typescript-mode . typescript-ts-mode)
@@ -431,6 +472,9 @@
     (add-to-list 'major-mode-remap-alist mapping)))
 
 (add-to-list 'auto-mode-alist '("\\.heex\\'" . heex-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.kts?\\'" . kotlin-mode))
+(with-eval-after-load 'kotlin-ts-mode
+  (add-to-list 'auto-mode-alist '("\\.kts?\\'" . kotlin-ts-mode)))
 (add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
