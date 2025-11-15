@@ -52,7 +52,9 @@
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. These are the defaults.
 ;;(setq doom-theme 'doom-one)
-(setq doom-theme 'doom-xcode)
+(add-to-list 'custom-theme-load-path
+             (expand-file-name "themes/" doom-user-dir))
+(setq doom-theme 'doom-nightfox)
 
 ;; If you intend to use org, it is recommended you change this!
 (setq org-directory "~/org/")
