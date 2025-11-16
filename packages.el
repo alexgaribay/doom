@@ -60,3 +60,8 @@
 (package! combobulate)
 (package! lsp-booster :recipe (:host github :repo "blahgeek/emacs-lsp-booster" :files ("*.el")))
 (package! consult-lsp)
+(package! lsp-ui)
+(package! lsp-treemacs)
+(package! dap-mode)
+(package! toml-mode)
+(package! crates)

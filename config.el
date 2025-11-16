@@ -246,6 +246,31 @@
     (when elixir-ls
       (setq lsp-elixir-server-command (list elixir-ls)))))
 
+(use-package lsp-ui
+  :after lsp-mode
+  :hook (lsp-mode . lsp-ui-mode)
+  :init
+  (setq lsp-ui-doc-delay 0.2
+        lsp-ui-doc-position 'at-point
+        lsp-ui-doc-include-signature t
+        lsp-ui-sideline-delay 0.05
+        lsp-ui-sideline-show-code-actions t
+        lsp-ui-sideline-show-diagnostics t
+        lsp-ui-sideline-show-hover t)
+  :config
+  (lsp-ui-doc-mode 1))
+
+;; Treemacs-powered outlines + diagnostics
+(use-package lsp-treemacs
+  :after lsp-mode
+  :commands (lsp-treemacs-errors-list lsp-treemacs-symbols)
+  :config
+  (lsp-treemacs-sync-mode 1)
+  (map! :leader
+        :prefix ("l" . "lsp")
+        :desc "LSP symbols (Treemacs)" "t" #'lsp-treemacs-symbols
+        :desc "LSP errors (Treemacs)" "e" #'lsp-treemacs-errors-list))
+
 ;; Company configuration for better React completions
 (after! company
   (setq company-minimum-prefix-length 1)
@@ -349,6 +374,29 @@ Avoids user errors when Doom's workspace machinery runs during shutdown."
         :prefix ("s" . "search")
         :desc "Symbols in buffer" "j" #'consult-lsp-file-symbols))
 
+(use-package dap-mode
+  :after lsp-mode
+  :commands dap-debug
+  :init
+  (setq dap-auto-configure-features
+        '(sessions locals breakpoints expressions repl controls tooltip))
+  :config
+  (dap-auto-configure-mode)
+  (require 'dap-node)
+  (require 'dap-chrome)
+  (require 'dap-gdb-lldb)
+  (map! :leader
+        :prefix ("d" . "debug")
+        :desc "Start debug session" "d" #'dap-debug
+        :desc "Toggle breakpoint" "b" #'dap-breakpoint-toggle
+        :desc "Continue" "c" #'dap-continue
+        :desc "Step in" "i" #'dap-step-in
+        :desc "Step out" "o" #'dap-step-out
+        :desc "Step over" "n" #'dap-next
+        :desc "REPL" "r" #'dap-ui-repl
+        :desc "Show locals" "l" #'dap-ui-locals
+        :desc "Disconnect" "x" #'dap-disconnect))
+
 (after! rustic
   ;; Align Rust test bindings with Elixir's test leader prefix.
   (map! :map rustic-mode-map
@@ -357,13 +405,27 @@ Avoids user errors when Doom's workspace machinery runs during shutdown."
         :desc "Test at point" "t" #'rustic-cargo-current-test
         :desc "Test module/buffer" "b" #'rustic-cargo-test-dwim
         :desc "Test project" "a" #'rustic-cargo-test)
+  (map! :map rustic-mode-map
+        :leader
+        :prefix "mr"
+        :desc "Cargo run" "r" #'rustic-cargo-run
+        :desc "Cargo check" "c" #'rustic-cargo-check
+        :desc "Cargo clippy" "l" #'rustic-cargo-clippy
+        :desc "Cargo doc" "d" #'rustic-cargo-doc)
   (when (boundp 'rust-ts-mode-map)
     (map! :map rust-ts-mode-map
           :leader
           :prefix "mt"
           :desc "Test at point" "t" #'rustic-cargo-current-test
           :desc "Test module/buffer" "b" #'rustic-cargo-test-dwim
-          :desc "Test project" "a" #'rustic-cargo-test)))
+          :desc "Test project" "a" #'rustic-cargo-test)
+    (map! :map rust-ts-mode-map
+          :leader
+          :prefix "mr"
+          :desc "Cargo run" "r" #'rustic-cargo-run
+          :desc "Cargo check" "c" #'rustic-cargo-check
+          :desc "Cargo clippy" "l" #'rustic-cargo-clippy
+          :desc "Cargo doc" "d" #'rustic-cargo-doc)))
 
 (use-package lsp-tailwindcss
   :init
@@ -394,8 +456,9 @@ Avoids user errors when Doom's workspace machinery runs during shutdown."
 
 (use-package treesit-auto
   :config
-  (setq treesit-auto-install 'prompt)
-  (add-to-list 'treesit-auto-langs 'kotlin)
+  (setq treesit-auto-install 'prompt
+        treesit-auto-langs '(bash css html javascript json tsx typescript yaml
+                               elixir heex kotlin rust))
   (global-treesit-auto-mode))
 
 ;; Terminal configuration
@@ -454,6 +517,7 @@ Avoids user errors when Doom's workspace machinery runs during shutdown."
      (javascript "https://github.com/tree-sitter/tree-sitter-javascript")
      (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
      (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
+     (rust "https://github.com/tree-sitter/tree-sitter-rust")
      (css "https://github.com/tree-sitter/tree-sitter-css")
      (html "https://github.com/tree-sitter/tree-sitter-html")
      (json "https://github.com/tree-sitter/tree-sitter-json")
@@ -496,7 +560,24 @@ Avoids user errors when Doom's workspace machinery runs during shutdown."
   (setf (alist-get 'js-mode apheleia-mode-alist) 'prettier)
   (setf (alist-get 'js-ts-mode apheleia-mode-alist) 'prettier)
   (setf (alist-get 'javascript-mode apheleia-mode-alist) 'prettier)
-  (setf (alist-get 'web-mode apheleia-mode-alist) 'prettier))
+  (setf (alist-get 'web-mode apheleia-mode-alist) 'prettier)
+  (setf (alist-get 'mix-format apheleia-formatters)
+        '("mix" "format" "-"))
+  (setf (alist-get 'rustfmt apheleia-formatters)
+        '("rustfmt" "--edition" "2021"))
+  (setf (alist-get 'ktfmt apheleia-formatters)
+        '("ktfmt" "--stdin"))
+  (dolist (mode '(elixir-mode elixir-ts-mode heex-mode heex-ts-mode))
+    (setf (alist-get mode apheleia-mode-alist) 'mix-format))
+  (dolist (mode '(rustic-mode rust-mode rust-ts-mode))
+    (setf (alist-get mode apheleia-mode-alist) 'rustfmt))
+  (dolist (mode '(kotlin-mode kotlin-ts-mode))
+    (setf (alist-get mode apheleia-mode-alist) 'ktfmt)))
+
+(use-package crates
+  :hook ((toml-mode . crates-mode)
+         (conf-toml-mode . crates-mode)
+         (toml-ts-mode . crates-mode)))
 
 ;; Combobulate for structural editing
 (use-package combobulate
