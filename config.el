@@ -574,11 +574,6 @@ Avoids user errors when Doom's workspace machinery runs during shutdown."
   (dolist (mode '(kotlin-mode kotlin-ts-mode))
     (setf (alist-get mode apheleia-mode-alist) 'ktfmt)))
 
-(use-package crates
-  :hook ((toml-mode . crates-mode)
-         (conf-toml-mode . crates-mode)
-         (toml-ts-mode . crates-mode)))
-
 ;; Combobulate for structural editing
 (use-package combobulate
   :preface

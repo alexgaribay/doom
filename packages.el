@@ -64,5 +64,3 @@
 (package! lsp-treemacs)
 (package! dap-mode)
 (package! toml-mode)
-(package! crates
-  :recipe (:host github :repo "magicdirac/crates.el"))
