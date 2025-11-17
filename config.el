@@ -216,6 +216,7 @@
   (setq lsp-auto-guess-root t)
   (setq lsp-prefer-flymake nil)
   (setq lsp-enable-file-watchers t)
+  (setq lsp-file-watch-threshold 5000)
   (setq lsp-enable-folding nil)
   (setq lsp-enable-symbol-highlighting t)
   (setq lsp-enable-text-document-color nil)
@@ -338,7 +339,8 @@ Avoids user errors when Doom's workspace machinery runs during shutdown."
         lsp-elixir-suggest-specs t
         lsp-elixir-auto-insert-required-alias t
         lsp-elixir-signature-after-complete t
-        lsp-elixir-enable-test-lenses t))
+        lsp-elixir-enable-test-lenses t
+        lsp-elixir-server-opts '("--limit-file-watch" "5000")))
 
 ;; Key bindings for React prop assistance
 (map! :after js2-mode

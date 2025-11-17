@@ -222,6 +222,7 @@ Can be an integer to determine the exact padding."
    (treemacs-git-untracked-face  :foreground cyan)
    (treemacs-git-conflict-face   :foreground red)
    (treemacs-tags-face           :foreground magenta)
+   (treemacs-hl-line-face        :background (doom-lighten base2 0.15) :extend t)
 
    ;;;; magit
    (magit-section-heading        :foreground blue :weight 'bold)
